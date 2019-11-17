@@ -179,7 +179,23 @@ def client_settings_update(data):
     # Push settings back out to all clients.
     flask_emit_event('server_settings_update', chasemapper_config)
 
-
+lastPos = "0"
+def retrieve_habhub_data(rsID):
+    import requests
+    global lastPos
+    r = requests.get("https://spacenear.us/tracker/datanew.php?mode=1day&type=positions&format=json&max_positions=0&position_id=" + lastPos + "&vehicles=*" + rsID)
+    j = json.loads(r.content)
+    
+    lastPos = j["positions"]["position"][0]["position_id"]
+    
+    for pos in reversed(j["positions"]["position"]):
+        data = {}
+        data["lat"] = float(pos["gps_lat"])
+        data["lon"] = float(pos["gps_lon"])
+        data["alt"] = float(pos["gps_alt"])
+        data["callsign"] = pos["vehicle"]
+        data["time_dt"] = datetime.strptime(pos["gps_time"], '%Y-%m-%d %H:%M:%S')
+        handle_new_payload_position(data)
 
 def handle_new_payload_position(data):
 
@@ -492,6 +508,10 @@ def model_download_finished(result):
         # Downloader reported an error, pass on to the client.
         flask_emit_event('predictor_model_update',{'model':result})
 
+
+@socketio.on('download_rs', namespace='/chasemapper')
+def download_new_rs(data):
+    retrieve_habhub_data("M10-809-2-12045")
 
 @socketio.on('download_model', namespace='/chasemapper')
 def download_new_model(data):

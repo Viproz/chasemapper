@@ -446,6 +446,10 @@
             $("#downloadModel").click(function(){
                 socket.emit('download_model', {data: 'plzkthx'});
             });
+			
+            $("#downloadRS").click(function(){
+                socket.emit('download_rs', {data: 'plzkthx'});
+            });
 
             $("#clearPayloadData").click(function(){
                 var _confirm = confirm("Really clear all Payload data?");
@@ -640,6 +644,9 @@
                 <h3>Data Source</h3>
                 <select id="profileSelect" name="profileSelect">
                 </select>
+                <div class="paramRow">
+                    <b>Download RS</b> <button type="button" class="paramSelector" id="downloadRS">Download</button>
+                </div>
 
                 <h3>Map</h3>
                 <h4>Auto-Follow</h4>
