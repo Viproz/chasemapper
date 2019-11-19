@@ -17,6 +17,7 @@ import traceback
 from threading import Thread
 from datetime import datetime, timedelta
 from dateutil.parser import parse
+import requests
 
 from chasemapper.config import *
 from chasemapper.earthmaths import *
@@ -179,23 +180,39 @@ def client_settings_update(data):
     # Push settings back out to all clients.
     flask_emit_event('server_settings_update', chasemapper_config)
 
-lastPos = "0"
+lastPos = {}
 def retrieve_habhub_data(rsID):
-    import requests
     global lastPos
-    r = requests.get("https://spacenear.us/tracker/datanew.php?mode=1day&type=positions&format=json&max_positions=0&position_id=" + lastPos + "&vehicles=*" + rsID)
-    j = json.loads(r.content)
     
-    lastPos = j["positions"]["position"][0]["position_id"]
+    # Download telemetry out of Habhub, same way as the web UI
+    _req = requests.get("https://spacenear.us/tracker/datanew.php?mode=1day&type=positions&format=json&max_positions=0&position_id=" + lastPos.get(rsID, "0") + "&vehicles=*" + rsID)
+    _json = json.loads(_req.content)
     
-    for pos in reversed(j["positions"]["position"]):
+    if len(_json["positions"]["position"]) == 0: # No match for payload
+        return
+    
+    # Update the last element ID to request only future telemetry
+    lastPos[rsID] = _json["positions"]["position"][0]["position_id"]
+    
+    # Send all positions to the telemetry handler
+    for _pos in reversed(_json["positions"]["position"]):
         data = {}
-        data["lat"] = float(pos["gps_lat"])
-        data["lon"] = float(pos["gps_lon"])
-        data["alt"] = float(pos["gps_alt"])
-        data["callsign"] = pos["vehicle"]
-        data["time_dt"] = datetime.strptime(pos["gps_time"], '%Y-%m-%d %H:%M:%S')
-        handle_new_payload_position(data)
+        data["lat"] = float(_pos["gps_lat"])
+        data["lon"] = float(_pos["gps_lon"])
+        data["alt"] = float(_pos["gps_alt"])
+        data["callsign"] = _pos["vehicle"].replace("RS_", "", 1)
+        data["time_dt"] = datetime.strptime(_pos["gps_time"], '%Y-%m-%d %H:%M:%S')
+        
+        # Get the latest payload datetime
+        _latestDT = datetime.fromtimestamp(0) # Old datetime
+        if data["callsign"] in current_payloads:
+            _state = current_payload_tracks[data["callsign"]].get_latest_state()
+            if _state != None:
+                _latestDT = _state["time"]
+        
+        # Only add it if it's more recent that the current, can be false if another source provided data
+        if data["time_dt"] > _latestDT:
+            handle_new_payload_position(data)
 
 def handle_new_payload_position(data):
 
@@ -509,9 +526,9 @@ def model_download_finished(result):
         flask_emit_event('predictor_model_update',{'model':result})
 
 
-@socketio.on('download_rs', namespace='/chasemapper')
-def download_new_rs(data):
-    retrieve_habhub_data("M10-809-2-12045")
+@socketio.on('download_habhub', namespace='/chasemapper')
+def download_new_habhub(data):
+    retrieve_habhub_data(data["callsign"])
 
 @socketio.on('download_model', namespace='/chasemapper')
 def download_new_model(data):
