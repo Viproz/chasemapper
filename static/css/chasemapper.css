@@ -40,21 +40,38 @@ html, body, #map {
 
 .paramRow {
 	margin: 5px;
+	display:flex;
+	align-items: center;
 }
 
 .paramSelector {
-	position: absolute;
-	right: 10px;
+	display: inline-block;
+	margin-left: auto;
 }
 .paramEntry {
-	position: absolute;
-	right: 10px;
+	display: inline-block;
+	margin-left: auto;
+	text-align: right;
+	padding-right: 0.2em;
+	width: 10em;
+}
+
+.predictorModelValue {
+	display: inline-block;
+	margin-left: auto;
+	text-align: right;
 }
 
 .timeToLanding {
 	color:red;
 	font-weight: bold;
 	font-size:5em;
+}
+
+.chaseCarSpeed {
+	color:black;
+	font-weight: bold;
+	font-size:3em;
 }
 
 .dataAgeHeader {
@@ -86,12 +103,14 @@ html, body, #map {
 	width:45px;
 	height:45px;
 	font-size:20px;
+	line-height:45px;
 }
 
 #followCarButton {
 	width:45px;
 	height:45px;
 	font-size:20px;
+	line-height:45px;
 }
 
 

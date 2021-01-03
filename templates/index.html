@@ -212,6 +212,11 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
+            // Add OSM Topo Map Layer
+            var osm_topo_map = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://wiki.openstreetmap.org/wiki/OpenTopoMap">OpenTopoMap</a> contributors'
+            });
+
             // Add ESRI Satellite Map layers.
             var esrimapLink = 
             '<a href="http://www.esri.com/">Esri</a>';
@@ -224,7 +229,7 @@
                 maxZoom: 18,
             });
 
-            var map_layers = {'OSM':osm_map, 'ESRI Satellite':esri_sat_map};
+            var map_layers = {'OSM':osm_map, 'OpenTopo':osm_topo_map, 'ESRI Satellite':esri_sat_map};
 
             // Add ThunderForest layers, if we have a key provided.
             if (chase_config.thunderforest_api_key !== 'none'){
@@ -232,7 +237,7 @@
                 var thunderforest_outdoors = L.tileLayer('https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey='+chase_config.thunderforest_api_key, 
                 {
                     attribution: '&copy; <a href="http://www.thunderforest.com">Thunderforest</a>, Data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-                }).addTo(map);
+                });
                 map_layers['Outdoors (Terrain)'] = thunderforest_outdoors;
 
             }
@@ -301,6 +306,21 @@
                 content : "<div class='dataAgeHeader'>Data Age</div><div id='payload_age' class='dataAgeOK'></div><div id='car_age' class='dataAgeOK'></div><div id='pred_age' class='dataAgeOK'></div>",
                 classes : 'btn-group-vertical btn-group-sm',
                 id: 'age_display',
+                style   :
+                {
+                    margin: '5px',
+                    padding: '0px 0 0 0',
+                    cursor: 'pointer',
+                }
+            })
+            .addTo(map);
+
+            // Chase Car Speed Display
+            L.control.custom({
+                position: 'bottomleft',
+                content : "<div class='dataAgeHeader' id='chase_car_speed_header'></div><div id='chase_car_speed' class='chaseCarSpeed'></div>",
+                classes : 'btn-group-vertical btn-group-sm',
+                id: 'speed_display',
                 style   :
                 {
                     margin: '5px',
@@ -431,7 +451,7 @@
             // Predictor Functions
             socket.on('predictor_model_update', function(data){
                 var _model_data = data.model;
-                $("#predictorModel").html("<b>Current Model: </b>" + _model_data);
+                $("#predictorModelValue").text(_model_data);
             });
         
             socket.on('predictor_update', function(data){
@@ -596,6 +616,9 @@
                 <b>Current Position:</b> <div style='float:right;' id='telemDialogPosition'></div><br/>
             </div>
             <div class="paramRow">
+                <b>Predicted Landing:</b> <div style='float:right;' id='telemDialogPredPosition'></div><br/>
+            </div>
+            <div class="paramRow">
                 <b>Select Action:</b><br/>
             </div>
         </div>
@@ -666,7 +689,7 @@
                 </hr>
                 <h3>Predictor</h3>
                 <div class="paramRow" id="predictorModel">
-                    <b>Current Model: </b> Predictor Disabled
+                    <b>Current Model: </b> <div class="predictorModelValue" id="predictorModelValue">Disabled</div>
                 </div>
                 <div class="paramRow">
                     <b>Download Model</b> <button type="button" class="paramSelector" id="downloadModel">Download</button>
@@ -744,6 +767,11 @@
                 </div>
                 <div class="paramRow">
                     <b>Custom Color</b><input type="text" class="paramEntry" id="ringCustomColor" value="#FF0000"><br/>
+                </div>
+
+                <h3>Speed Display</h3>
+                <div class="paramRow">
+                    <b>Show Chase Car Speed:</b> <input type="checkbox" class="paramSelector" id="showCarSpeed">
                 </div>
 
 

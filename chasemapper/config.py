@@ -25,7 +25,8 @@ default_config = {
     'thunderforest_api_key': 'none',
 
     # Predictor settings
-    'pred_enabled': False,  # Enable running and display of predicted flight paths.
+    'pred_enabled': True,  # Enable running and display of predicted flight paths.
+	'offline_predictions': False, # Use an offline GFS model and predictor instead of Tawhiri.
     # Default prediction settings (actual values will be used once the flight is underway)
     'pred_model': "Disabled",
     'pred_desc_rate': 6.0,
@@ -40,6 +41,9 @@ default_config = {
     'range_ring_weight': 1.5,
     'range_ring_color': 'red',
     'range_ring_custom_color': '#FF0000',
+
+	# Chase Car Speedometer
+	'chase_car_speed': True,
 
     # Bearing processing
     'max_bearings': 300,
@@ -84,6 +88,7 @@ def parse_config_file(filename):
 
 	# Predictor
 	chase_config['pred_enabled'] = config.getboolean('predictor', 'predictor_enabled')
+	chase_config['offline_predictions'] = config.getboolean('predictor', 'offline_predictions')
 	chase_config['pred_burst'] = config.getfloat('predictor', 'default_burst')
 	chase_config['pred_desc_rate'] = config.getfloat('predictor', 'default_descent_rate')
 	chase_config['pred_binary'] = config.get('predictor','pred_binary')
@@ -120,6 +125,12 @@ def parse_config_file(filename):
 			if os.path.isdir(os.path.join(chase_config['tile_server_path'],_dir)):
 				chase_config['offline_tile_layers'].append(_dir)
 		logging.info("Found Map Layers: %s" % str(chase_config['offline_tile_layers']))
+
+	try:
+		chase_config['chase_car_speed'] = config.getboolean('speedo', 'chase_car_speed')
+	except:
+		logging.info("Missing Chase Car Speedo Setting, using default (disabled)")
+		chase_config['chase_car_speed'] = False
 
 	# Telemetry Source Profiles
 

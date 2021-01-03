@@ -21,13 +21,13 @@ Currently Chasemapper is a bit mandrolic to set up, and this could be improved c
 
 On a Raspbian/Ubuntu/Debian system, you can get most of the required dependencies using:
 ```
-$ sudo apt-get install git python-numpy python-requests python-serial python-dateutil python-flask
+$ sudo apt-get install git python3-numpy python3-requests python3-serial python3-dateutil python3-flask python3-pip
 ```
 On other OSes the required packages should be named something similar. 
 
 You also need flask-socketio and pytz, which can be installed using pip:
 ```
-$ sudo pip install flask-socketio pytz
+$ sudo pip3 install flask-socketio==4.3.2 pytz
 ```
 
 You can then clone this repository with:
@@ -69,7 +69,11 @@ The server can be stopped with CTRL+C. Sometimes the server doesn't stop cleanly
 You should then be able to access the webpage by visiting http://your_ip_here:5001/
 
 ## Live Predictions
-We can also run live predictions of the flight path. 
+By default, chasemapper will attempt to request flight-path predictions from the [Tawhiri Predictor API](https://tawhiri.readthedocs.io/en/latest/api.html), which requires an internet connection. If you have a semi-reliable internet connection during the flight, this might be all you need to get chasing!
+
+However, if you think you might be going out of phone coverage range, you may want to set up offline predictions:
+
+### Offline Predictions
 
 To do this you need cusf_predictor_wrapper and it's dependencies installed. Refer to the [documentation on how to install this](https://github.com/darksidelemm/cusf_predictor_wrapper/).
 
@@ -77,9 +81,9 @@ Once compiled and the python library installed, you will need to:
  * Copy the 'pred' binary into this directory. If using the Windows build, this will be `pred.exe`; under Linux/OSX, just `pred`.
  * Copy the 'get_wind_data.py' script from cusf_predictor_wrapper/apps into this directory.
 
-You will then need to modify the horusmapper.cfg Predictor section setting as necessary to reflect the predictory binary location, the appropriate model_download command, and set `[predictor] predictor_enabled = True`
+You will then need to modify the horusmapper.cfg Predictor section setting as necessary to reflect the predictory binary location, the appropriate model_download command.
 
-You can then click 'Download Model' in the web interface's setting tab to trigger a download of the latest GFS model data. Predictions will start automatically once a valid model is available.
+You can then click 'Download Model' in the web interface's setting tab to trigger a download of the latest GFS model data. Offline predictions will start automatically once a valid model is available. You can tell if you are using Online or Offline predictions by an '(Online)' or '(Offline)' indication next to the 'Current Model' line in the status panel.
 
 ## Chase Car Positions
 At the moment Chasemapper supports receiving chase-car positions via either GPSD, a Serial-attached GPS, or Horus UDP messages. Refer to the configuration file for setup information for these options.
@@ -123,7 +127,7 @@ Description=chasemapper
 After=syslog.target
 
 [Service]
-ExecStart=/usr/bin/python /home/pi/chasemapper/horusmapper.py
+ExecStart=/usr/bin/python3 /home/pi/chasemapper/horusmapper.py
 Restart=always
 RestartSec=3
 WorkingDirectory=/home/pi/chasemapper/
@@ -174,7 +178,7 @@ The above formats are accepted via a horus_udp listener, and so you must have a 
 
 Bearings are plotted on the map as thin lines, which slowly become transparent as they get older, and then disappear. The style of the line and the maximum age bearings shown can be configured in the new bearing settings tab on the left of the screen (click the compass icon). You can also filter bearings by the optionally supplied confidence level ('Confidence Threshold'). Bearings provided while the chase-car is stationary (i.e. when the heading is essentially unknown) are filtered out of the display by default, but can be enabled if desired ('Show stationary bearings'). Most of the filter settings will only take effect by clicking the 'Redraw Bearings' button.
 
-My [Kerberos-SDR fork](https://github.com/darksidelemm/kerberossdr) will emit relative bearings in the above format on UDP port 55672, including the raw TDOA data, which is plotted on a polar plot on the bottom-right of the display. Bearing data will be emitted as soon as TDOA processing is started. Note that I have only tested with data from a Uniform Circular Array and do not currently handle forward/reverse ambiguities from a linear array configuration. I would *not* suggest running Chasemapper on the same device as the Kerberos-SDR software, due to the high processor load of the Kerberos algorithms.
+My [Kerberos-SDR fork](https://github.com/darksidelemm/kerberossdr) (NOTE: This hasn't been updated in a while...) will emit relative bearings in the above format on UDP port 55672, including the raw TDOA data, which is plotted on a polar plot on the bottom-right of the display. Bearing data will be emitted as soon as TDOA processing is started. Note that I have only tested with data from a Uniform Circular Array and do not currently handle forward/reverse ambiguities from a linear array configuration. I would *not* suggest running Chasemapper on the same device as the Kerberos-SDR software, due to the high processor load of the Kerberos algorithms.
 
 Note that the bearing display (in particular the TDOA data polar plot) does put a fairly big strain on some slower devices. Currently the polar plot is generated in a fairly naive way, and definitely has room for improvement. 
 

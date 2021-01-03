@@ -74,6 +74,7 @@ default_lon = 138.6
 payload_max_age = 180
 
 # ThunderForest API Key
+# NOTE: OpenTopoMaps is now available by default, and is a good alternative to ThunderForest's outdoors map.
 # If you want to use ThunderForest's Outdoors map (Topographic maps), you will need to
 # register for an API key here: https://manage.thunderforest.com/users/sign_up?plan_id=5
 # Once you have a key, enter it below:
@@ -81,16 +82,27 @@ thunderforest_api_key = none
 
 
 # Predictor Settings
-# Use of the predictor requires installing the CUSF Predictor Python Wrapper from here:
-# https://github.com/darksidelemm/cusf_predictor_wrapper
-# You also need to compile the predictor binary, and copy it into this directory.
+# By default this will attempt to get predictions from the online Tawhiri Predictions API.
+# Optionally, you can enable offline predictions below.
 [predictor]
 # Enable Predictor (True/False) - This can also be enabled from the web client.
-predictor_enabled = False
+predictor_enabled = True
 
 # Predictor defaults - these can be modified at runtime in the web interface.
 default_burst = 30000
 default_descent_rate = 5.0
+
+
+# Offline Predictions
+# Use of the offline predictor requires installing the CUSF Predictor Python Wrapper from here:
+# https://github.com/darksidelemm/cusf_predictor_wrapper
+# You also need to compile the predictor binary, and copy it into this directory.
+#
+# Note: This setting turns offline predictions *on* by default, which assumes there is a valid
+# GFS dataset already present and available. 
+# If you will be using the 'Download Model' button, then leave this at False, and Offline predictions
+# will be enabled once a valid model is available.
+offline_predictions = False
 
 # Predictory Binary Location
 # Where to find the built CUSF predictor binary. This will usually be ./pred or pred.exe (on Windows)
@@ -102,7 +114,7 @@ gfs_directory = ./gfs/
 # Wind Model Download Command
 # Optional command to enable downloading of wind data via a web client button.
 # Example: (this will require copying the get_wind_data.py script to this dirctory)
-# model_download = python get_wind_data.py --lat=-33 --lon=139 --latdelta=10 --londelta=10 -f 24 -m 0p50 -o gfs
+# model_download = python3 get_wind_data.py --lat=-33 --lon=139 --latdelta=10 --londelta=10 -f 24 -m 0p50 -o gfs
 # The gfs directory (above) will be cleared of all .dat files prior to the above command being run.
 model_download = none
 
@@ -164,6 +176,11 @@ range_ring_color = red
 # Custom range ring color, in hexadecimal #RRGGBB
 range_ring_custom_color = #FF0000
 
+#
+#   Chase Car Speedometer
+#
+[speedo]
+chase_car_speed = True
 
 #
 # Bearing Processing
