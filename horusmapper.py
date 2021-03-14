@@ -187,7 +187,7 @@ def retrieve_habhub_data(rsID):
     
     # Download telemetry out of Habhub, same way as the web UI
     _req = requests.get("https://spacenear.us/tracker/datanew.php?mode=1day&type=positions&format=json&max_positions=0&position_id=" + lastPos.get(rsID, "0") + "&vehicles=*" + rsID)
-    _json = json.loads(_req.content)
+    _json = json.loads(_req.content.decode("utf-8"))
     
     if len(_json["positions"]["position"]) == 0: # No match for payload
         return
